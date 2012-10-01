@@ -23,6 +23,22 @@ describe StrataGem::Connection do
         operator.get("lala")
       end
       
+      
+      it "send the right information for a show by origin" do
+        operator = StrataGem::Operator.new("app_id", "secret", "token")
+        (the_reponse = double("response")).stub(:parsed).and_return({})
+        operator.instance_eval { @connection.instance_eval { @access.should_receive(:get).with("/events/by_origin/lala").and_return(the_reponse) } }
+        operator.get_by_unique("lala")
+      end      
+      
+      it "send the right information for an index by aircraft" do
+        operator = StrataGem::Operator.new("app_id", "secret", "token")
+        (the_reponse = double("response")).stub(:parsed).and_return({})
+        operator.instance_eval { @connection.instance_eval { @access.should_receive(:get).with("/aircrafts/lala/events").and_return(the_reponse) } }
+        operator.index_by_aircraft("lala")
+      end      
+      
+      
       it "send the right information for an index" do
         operator = StrataGem::Operator.new("app_id", "secret", "token")
         (the_reponse = double("response")).stub(:parsed).and_return([])
@@ -31,21 +47,28 @@ describe StrataGem::Connection do
       end
 
       it "send the right information for a create" do
-        event = StrataGem::Event.new({"from_airfield_id" => "w00t"}, operator = StrataGem::Operator.new("app_id", "secret", "token"))
+        event = StrataGem::Event.new(operator = StrataGem::Operator.new("app_id", "secret", "token"), {"start_airfield" => "w00t"})
         (the_reponse = double("response")).stub(:parsed).and_return({})
-        operator.instance_eval { @connection.instance_eval { @access.should_receive(:post).with("/events/", {:params=>{:event=>{"departure_time"=>nil, "arrival_time"=>nil, "from_airfield_id"=>"w00t", "to_airfield_id"=>nil, "aircraft_id"=>nil, "utilization"=>nil, "utilization_count"=>nil, "id"=>nil}}}).and_return(the_reponse) } }
+        operator.instance_eval { @connection.instance_eval { @access.should_receive(:post).with("/events/", {:params=>{:event=>{"start_time"=>nil, "end_time"=>nil, "start_airfield"=>"w00t", "end_airfield"=>nil, "aircraft_registration"=>nil, "utilization"=>nil, "utilization_count"=>nil, "deleted"=>nil, "data_source"=>nil, "data_source_unique_id"=>nil, "id"=>nil}}}).and_return(the_reponse) } }
         event.save
       end
       
-      it "send the right information for an update" do
-        event = StrataGem::Event.new({"id" => "abc", "from_airfield_id" => "w00t"}, operator = StrataGem::Operator.new("app_id", "secret", "token"))
+      it "send the right information for a batch" do
+        event = StrataGem::Event.new(operator = StrataGem::Operator.new("app_id", "secret", "token"), {"start_airfield" => "w00t"})
         (the_reponse = double("response")).stub(:parsed).and_return({})
-        operator.instance_eval { @connection.instance_eval { @access.should_receive(:put).with("/events/abc", {:params=>{:event=>{"departure_time"=>nil, "arrival_time"=>nil, "from_airfield_id"=>"w00t", "to_airfield_id"=>nil, "aircraft_id"=>nil, "utilization"=>nil, "utilization_count"=>nil, "id"=>"abc"}}}).and_return(the_reponse) } }
+        operator.instance_eval { @connection.instance_eval { @access.should_receive(:post).with("/events/batch", {:params=>{:events=>[{"start_time"=>nil, "end_time"=>nil, "start_airfield"=>"w00t", "end_airfield"=>nil, "aircraft_registration"=>nil, "utilization"=>nil, "utilization_count"=>nil, "deleted"=>nil, "data_source"=>nil, "data_source_unique_id"=>nil, "id"=>nil}]}}).and_return(the_reponse) } }
+        operator.create_in_batch([event])
+      end
+      
+      it "send the right information for an update" do
+        event = StrataGem::Event.new(operator = StrataGem::Operator.new("app_id", "secret", "token"), {"id" => "abc", "start_airfield" => "w00t"})
+        (the_reponse = double("response")).stub(:parsed).and_return({})
+        operator.instance_eval { @connection.instance_eval { @access.should_receive(:put).with("/events/abc", {:params=>{:event=>{"start_time"=>nil, "end_time"=>nil, "start_airfield"=>"w00t", "end_airfield"=>nil, "aircraft_registration"=>nil, "utilization"=>nil, "utilization_count"=>nil, "deleted"=>nil, "data_source"=>nil, "data_source_unique_id"=>nil, "id"=>"abc"}}}).and_return(the_reponse) } }
         event.save
       end
       
       it "send the right information for a destroy" do
-        event = StrataGem::Event.new({"id" => "abc", "from_airfield_id" => "w00t"}, operator = StrataGem::Operator.new("app_id", "secret", "token"))
+        event = StrataGem::Event.new(operator = StrataGem::Operator.new("app_id", "secret", "token"), {"id" => "abc", "end_airfield" => "w00t"})
         (the_reponse = double("response")).stub(:parsed).and_return({})
         operator.instance_eval { @connection.instance_eval { @access.should_receive(:delete).with("/events/abc").and_return(the_reponse) } }
         event.destroy

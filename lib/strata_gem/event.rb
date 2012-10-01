@@ -1,18 +1,21 @@
 module StrataGem
   class Event
     attr_reader   :id, :operator, :errors
-    attr_accessor :departure_time, :arrival_time, :from_airfield_id, :to_airfield_id, :aircraft_id, :utilization, :utilization_count
+    attr_accessor :start_time, :end_time, :start_airfield, :end_airfield, :aircraft_registration, :utilization, :utilization_count, :deleted, :data_source, :data_source_unique_id
     
-    def initialize(event_hash, operator)
+    def initialize(operator, event_hash = {})
       raise ArgumentError, "Invalid operator specified" if !operator.is_a?(StrataGem::Operator)
       @operator = operator
-      @departure_time = event_hash["departure_time"]
-      @arrival_time = event_hash["arrival_time"]
-      @from_airfield_id = event_hash["from_airfield_id"]
-      @to_airfield_id = event_hash["to_airfield_id"]
-      @aircraft_id = event_hash["aircraft_id"]
+      @start_time = event_hash["start_time"]
+      @end_time = event_hash["end_time"]
+      @start_airfield = event_hash["start_airfield"]
+      @end_airfield = event_hash["end_airfield"]
+      @aircraft_registration = event_hash["aircraft_registration"]
       @utilization = event_hash["utilization"]
       @utilization_count = event_hash["utilization_count"]
+      @deleted = event_hash["deleted"]
+      @data_source = event_hash["data_source"]
+      @data_source_unique_id = event_hash["data_source_unique_id"]
       @id = event_hash["id"]
     end
     
@@ -34,6 +37,10 @@ module StrataGem
         @errors = data["errors"] || data["error"]
         return false
       end
+    end
+    
+    def inspect
+      "<#{self.class.to_s} | #{@id}>"
     end
     
     def destroy
